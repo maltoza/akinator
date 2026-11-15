@@ -1,0 +1,26 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "(g++) построение main.cpp",
+            "type": "shell",
+            "command": "g++.exe",
+            "args": [
+                "-g",// компиляция с отладочной информацией
+                "-DTREE_DEBUG",
+                "${workspaceFolder}/main.cpp",
+                "-I./tree_str",
+                "./tree_str/tree.cpp",
+                "-I./akin",
+                "./akin/akinator.cpp",
+                "-o",
+                "${workspaceFolder}/main.exe"
+            ],
+            "group": "build",
+            "presentation": {
+                "reveal": "silent"
+            },
+            "problemMatcher": "$gcc"
+        }
+    ]
+}
