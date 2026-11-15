@@ -1,6 +1,7 @@
 #ifndef AKINATOR_H
 #define AKINATOR_H
 
+#include "ctype.h"
 #include "../error.h"
 #include "tree.h"
 
@@ -19,5 +20,6 @@ struct akin_t {
 AKIN_MES akin_ctor(akin_t* akn);
 AKIN_MES akin_dtor(akin_t* akn);
 AKIN_MES akin_rd(akin_t* akn, char* filename);
+AKIN_MES akin_game(akin_t* akn);
 
 #endif // AKINATOR_H
