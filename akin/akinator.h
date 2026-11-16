@@ -3,12 +3,13 @@
 
 #include "ctype.h"
 #include "../error.h"
-#include "tree.h"
+#include "../tree_str/tree.h"
 
 
 // сообщения акинатора
 enum AKIN_MES {
     AKIN_MES_OK,
+    AKIN_MES_FILE_ERROR,
 };
 
 // структура акинатора

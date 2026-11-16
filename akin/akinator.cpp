@@ -40,7 +40,7 @@ AKIN_MES akin_rd_recurs(akin_t* akn, FILE* filename, node_t* node, size_t br_ind
     char branch0_name[LINE_LEN];
     char branch1_name[LINE_LEN];
     node_t* temp;
-    while ((node_name[0] = fgetc(filename)) != '\"');
+    if ((node_name[0] = fgetc(filename)) != '\"') RETURN_ERROR(AKIN_MES_FILE_ERROR);
     int i;
     for (i = 0; (c = fgetc(filename)) != '\"'; i++) {
         node_name[i] = c;
@@ -48,44 +48,77 @@ AKIN_MES akin_rd_recurs(akin_t* akn, FILE* filename, node_t* node, size_t br_ind
     node_name[i] = '\0';
     tree_insert(&(akn->tr), node_name, node, br_ind, 0, &temp);
     
-    while(isspace(branch0_name[0] = fgetc(filename)));
-    if ((branch0_name[0]) == '(') akin_rd_recurs(akn, filename, temp, 0);
-    for (i = 1; (c = fgetc(filename)) != ' '; i++) branch0_name[i] = c;
-    branch0_name[i] = '\0';
-    if (strcmp(branch0_name, "nill") == 0) node->branch_ptr[0] = NULL;
-
-    while(isspace(branch1_name[0] = fgetc(filename)));
-    if ((branch1_name[0]) == '(') akin_rd_recurs(akn, filename, temp, 1);
-    for (i = 1; (c = fgetc(filename)) != ')'; i++) branch1_name[i] = c;
-    branch1_name[i] = '\0';
-    if (strcmp(branch0_name, "nill") == 0) node->branch_ptr[1] = NULL;
-
-    return AKIN_MES_OK;
-}
-
-
-AKIN_MES akin_game(akin_t* akn) {
-    wprintf(L"Привет! Я акинатор!\n");
-    wprintf(L"Хочешь сыграть в игру?[Y/N]\n");
-    char c;
-    c = toupper(getchar());
-    while(c != 'Y' && c != 'N') c = toupper(getchar());
-    if (c == 'Y') akin_game_recurs(akn, akn->tr.head);
-
-    wprintf(L"Пока!\n");
-
-    return AKIN_MES_OK;
-}
-
-AKIN_MES akin_game_recurs(akin_t* akn, node_t* node) {
-    if (node->branch_ptr[0] == NULL && node->branch_ptr[1] == NULL) {
-        wchar_t temp[LINE_LEN];
-        mbstowcs(temp, &(node->value), LINE_LEN);
-        wprintf(L"Это %ls?\n", temp);
+    if(fgetc(filename) != ' ') RETURN_ERROR(AKIN_MES_FILE_ERROR);
+    if ((branch0_name[0] = fgetc(filename)) == '(') {
+        akin_rd_recurs(akn, filename, temp, 0);
+        if(fgetc(filename) != ' ') RETURN_ERROR(AKIN_MES_FILE_ERROR);
     } else {
-        wchar_t temp[LINE_LEN];
-        mbstowcs(temp, &(node->value), LINE_LEN);
-        wprintf(L"%ls?[Y/N]\n", temp);
+        for (i = 1; (c = fgetc(filename)) != ' '; i++) branch0_name[i] = c;
+        branch0_name[i] = '\0';
+        if (strcmp(branch0_name, "nil") == 0) temp->branch_ptr[0] = NULL;
+        else RETURN_ERROR(AKIN_MES_FILE_ERROR);
+    }
+
+    if ((branch1_name[0] = fgetc(filename)) == '(') {
+        akin_rd_recurs(akn, filename, temp, 1);
+        if(fgetc(filename) != ')') RETURN_ERROR(AKIN_MES_FILE_ERROR);
+    } else {
+        for (i = 1; (c = fgetc(filename)) != ')'; i++) branch1_name[i] = c;
+        branch1_name[i] = '\0';
+        if (strcmp(branch1_name, "nil") == 0) temp->branch_ptr[1] = NULL;
+    }
+
+    return AKIN_MES_OK;
+}
+
+// игра
+AKIN_MES akin_game(akin_t* akn) {
+    printf("Привет! Я акинатор!\n");
+    while (1) {
+        printf("Поиграем?[Y/N]\n");
+        char c;
+        c = toupper(getchar());
+        while(c != 'Y' && c != 'N') c = toupper(getchar());
+        if (c == 'Y') akin_game_recurs(akn, akn->tr.head);
+        else if (c == 'N') break;
+    }
+    printf("Пока!\n");
+
+    return AKIN_MES_OK;
+}
+
+// рекурсивная функция игры
+AKIN_MES akin_game_recurs(akin_t* akn, node_t* node) {
+    char new_value[LINE_LEN];
+    char new_diff[LINE_LEN];
+    size_t branch_id;
+    node_t* temp;
+
+    if (node->branch_ptr[0] == NULL && node->branch_ptr[1] == NULL) {
+        printf("Это %s?\n", &(node->value));
+        char ans = toupper(getchar());
+        while(ans != 'Y' && ans != 'N') ans = toupper(getchar());
+        if (ans == 'Y') printf("Ура! Я отгадал!\n");
+        else {
+            // обучение
+            printf("Я хочу узнать, что ты загадал...\n");
+            printf("Что ты загадал?\n");
+            scanf("%s", new_value);
+            printf("Чем %s отличается от %s?\n", new_value, &(node->value));
+            printf("Он: ");
+            scanf("%s", new_diff);
+            for (int i = 0; i < TREE_BRANCH_COUNT; i++) {
+                if (node->root_ptr->branch_ptr[i]->value == node->value) {
+                    branch_id = i;
+                    break;
+                }
+            }
+            tree_insert(&(akn->tr), new_diff, node->root_ptr, branch_id, 0, &temp);
+            tree_insert(&(akn->tr), new_value, temp, 1, 0, &temp);            
+        }
+
+    } else {
+        printf("%s?[Y/N]\n", &(node->value));
         char ans = toupper(getchar());
         while(ans != 'Y' && ans != 'N') ans = toupper(getchar());
         if (ans == 'Y') akin_game_recurs(akn, node->branch_ptr[1]);
