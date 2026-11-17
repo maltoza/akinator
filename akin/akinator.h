@@ -22,5 +22,6 @@ AKIN_MES akin_ctor(akin_t* akn);
 AKIN_MES akin_dtor(akin_t* akn);
 AKIN_MES akin_rd(akin_t* akn, char* filename);
 AKIN_MES akin_game(akin_t* akn);
+AKIN_MES akin_wr(akin_t* akn, char* filename);
 
 #endif // AKINATOR_H
