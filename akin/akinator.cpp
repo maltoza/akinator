@@ -5,7 +5,7 @@
 AKIN_MES akin_rd_recurs(akin_t* akn, FILE* file, node_t* node, size_t br_ind);
 AKIN_MES akin_game_recurs(akin_t* akn, node_t* node);
 AKIN_MES akin_wr_recurs(akin_t* akn, FILE* file, node_t* node);
-
+AKIN_MES akin_get_nodes_val(akin_t* akn, char* word, char (*data)[], size_t* num_els);
 
 // ctor акинатора
 AKIN_MES akin_ctor(akin_t* akn) {
@@ -153,6 +153,110 @@ AKIN_MES akin_wr_recurs(akin_t* akn, FILE* file, node_t* node) {
     if (node->branch_ptr[1] != NULL) akin_wr_recurs(akn, file, node->branch_ptr[1]);
     else fprintf(file, "nil");
     fprintf(file, ")");
+
+    return AKIN_MES_OK;
+}
+
+
+// получить определение слова
+AKIN_MES akin_get_definition(akin_t* akn) {
+    size_t num_els = 0;
+    char (*data)[];
+    char word[LINE_LEN] = {};
+    data = (char (*)[])calloc(akn->tr.num_elems, sizeof(char) * LINE_LEN);
+    printf("What word do you want to find?\n");
+    scanf("%s", word);
+    akin_get_nodes_val(akn, word, data, &num_els);
+    if (num_els == 0) {
+        printf("Word didn't find\n");
+    } else {
+        printf("%s is: ", word);
+        for (size_t j = 0; j < num_els; j++) {
+            printf("%s", &((*data)[j * LINE_LEN]));
+            if (j == num_els - 1) printf(".\n");
+            else printf(", ");
+        }
+    }
+
+    return AKIN_MES_OK;
+}
+
+// получение массива значений корневых узлов
+AKIN_MES akin_get_nodes_val(akin_t* akn, char* word, char (*data)[], size_t* num_els) {
+    node_t* res = NULL;
+    char (*temp)[];
+    temp = (char (*)[])calloc(akn->tr.num_elems, sizeof(char) * LINE_LEN);
+    tree_find_node(&(akn->tr), word, akn->tr.head, &res);
+    if (res == NULL) {
+        *num_els = 0;
+        return AKIN_MES_OK;
+    } else {
+        size_t i = 0;
+        do {
+            if (res->root_ptr->branch_ptr[0] == res) {
+                strcpy(&((*temp)[i * LINE_LEN]), "not ");
+                strcpy(&((*temp)[i * LINE_LEN + 4]), &(res->root_ptr->value));
+            } else {
+                strcpy(&((*temp)[i * LINE_LEN]), &(res->root_ptr->value));
+            }
+            res = res->root_ptr;
+            i++;
+        } while (res->root_ptr != NULL);
+        for (size_t j = i; j > 0; j--) {
+            strcpy(&((*data)[(i - j) * LINE_LEN]), &((*temp)[(j - 1) * LINE_LEN]));
+        }
+        *num_els = i;
+    }
+
+    return AKIN_MES_OK;
+}
+
+// сравнение двух определений
+AKIN_MES akin_compare_words(akin_t* akn) {
+    size_t num_els1 = 0;
+    size_t num_els2 = 0;
+    char (*data1)[];
+    char (*data2)[];
+    char word1[LINE_LEN] = {};
+    char word2[LINE_LEN] = {};
+    data1 = (char (*)[])calloc(akn->tr.num_elems, sizeof(char) * LINE_LEN);
+    data2 = (char (*)[])calloc(akn->tr.num_elems, sizeof(char) * LINE_LEN);
+    printf("What words do you want to compare?\n");
+    printf("First word: ");
+    scanf("%s", word1);
+    printf("Second word: ");
+    scanf("%s", word2);
+    akin_get_nodes_val(akn, word1, data1, &num_els1);
+    akin_get_nodes_val(akn, word2, data2, &num_els2);
+    size_t i = 0;
+    if (num_els1 > 0 && num_els2 > 0) {
+        printf("Words equal in: ");
+        while (!strcmp(&((*data1)[i * LINE_LEN]), &((*data2)[i * LINE_LEN]))) {
+            if (i != 0) printf(", ");
+            printf("%s", &((*data1)[i * LINE_LEN]));
+            i++;
+        }
+        printf(".\n");
+        size_t count1 = i;
+        size_t count2 = i;
+        printf("First word difference: ");
+        while (count1 < num_els1) {
+            if (count1 != i) printf(", ");
+            printf("%s", &((*data1)[count1 * LINE_LEN]));
+            count1++;
+        }
+        printf(".\n");
+        printf("Second word difference: ");
+        while (count2 < num_els2) {
+            if (count2 != i) printf(", ");
+            printf("%s", &((*data2)[count2 * LINE_LEN]));
+            count2++;
+        }
+        printf(".\n");
+    } else {
+        if (num_els1 == 0) printf("Can't find first word\n");
+        if (num_els2 == 0) printf("Can't find second word\n");
+    }
 
     return AKIN_MES_OK;
 }

@@ -299,3 +299,18 @@ TREE_MES tree_gv_print_edges(tree_t* tr, FILE* file_gv, node_t* node) {
 
     return TREE_MES_OK;
 }
+
+// поиск элемента в дереве
+TREE_MES tree_find_node(tree_t* tr, node_elem_t* val, node_t* nd, node_t** res) {
+    if (!strcmp(&(nd->value), val)) {
+        *res = nd;
+        return TREE_MES_OK;
+    } else {
+        for (int i = 0; i < TREE_BRANCH_COUNT; i++) {
+            if (nd->branch_ptr[i] != NULL) tree_find_node(tr, val, nd->branch_ptr[i], res);
+        }
+    }
+
+    return TREE_MES_OK;
+}
+

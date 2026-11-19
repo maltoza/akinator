@@ -50,5 +50,6 @@ TREE_MES tree_insert(tree_t* const tr, const node_elem_t* const val, node_t* con
 //TREE_MES tree_sort_ins(tree_t* tr, node_elem_t val, node_t* now_node);
 TREE_MES tree_delete(tree_t* tr, node_t* node);
 TREE_MES tree_get_graph(tree_t* tr, char* filename_png);
+TREE_MES tree_find_node(tree_t* tr, node_elem_t* val, node_t* nd, node_t** res);
 
 #endif // TREE_H
